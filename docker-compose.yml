@@ -1,0 +1,44 @@
+services:
+  # Servidor de Banco de Dados
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: diabetes-bot-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - diabetes-network
+  evolution-api:
+    image: evoapicloud/evolution-api:latest
+    container_name: diabetes-bot-whatsapp
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_URL=http://localhost:8080
+      - AUTHENTICATION_API_KEY=${EVO_API_KEY}
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://${DB_USER}:${DB_PASSWORD}@postgres-db:5432/${DB_NAME}
+      - CACHE_REDIS_ENABLED=false
+    volumes:
+      - evolution_instances:/evolution/instances
+    networks:
+      - diabetes-network
+    depends_on:
+      - postgres-db
+
+volumes:
+  postgres_data:
+    driver: local
+  evolution_instances:
+    driver: local
+
+networks:
+  diabetes-network:
+    driver: bridge

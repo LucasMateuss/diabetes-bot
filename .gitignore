@@ -1,0 +1,14 @@
+# Senhas e Variáveis de Ambiente
+.env
+
+# Pastas de compilação do C#
+bin/
+obj/
+
+# Arquivos do Visual Studio
+.vs/
+*.user
+
+# Banco de dados local (se houver algum mapeamento)
+*.db
+*.sqlite
