@@ -17,10 +17,59 @@ namespace DiabetesBot.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("ProductVersion", "10.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("DiabetesBot.Entities.Alimento", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("CarboidratoPor100g")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<int>("CodigoTaco")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("EnergiaPor100g")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<decimal>("FibraPor100g")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<string>("Grupo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("LipidioPor100g")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("ProteinaPor100g")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CodigoTaco")
+                        .IsUnique();
+
+                    b.HasIndex("Nome");
+
+                    b.ToTable("Alimentos");
+                });
 
             modelBuilder.Entity("DiabetesBot.Entities.Paciente", b =>
                 {
@@ -28,11 +77,18 @@ namespace DiabetesBot.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("DataCadastro")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("EstadoCadastro")
+                        .HasColumnType("integer");
+
                     b.Property<decimal>("FatorSensibilidade")
-                        .HasColumnType("numeric");
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
 
                     b.Property<int>("GlicemiaAlvo")
                         .HasColumnType("integer");
@@ -42,7 +98,8 @@ namespace DiabetesBot.Migrations
                         .HasColumnType("text");
 
                     b.Property<decimal>("RelacaoInsulinaCarboidrato")
-                        .HasColumnType("numeric");
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
 
                     b.Property<string>("TelefoneWhatsApp")
                         .IsRequired()
@@ -54,6 +111,60 @@ namespace DiabetesBot.Migrations
                         .IsUnique();
 
                     b.ToTable("Pacientes");
+                });
+
+            modelBuilder.Entity("DiabetesBot.Entities.RegistroRefeicao", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AlimentosJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("DataRegistro")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DescricaoOriginal")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("DoseCalculada")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<int>("FonteNutricional")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("GlicemiaInformada")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("PacienteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("TotalCarboidratos")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DataRegistro");
+
+                    b.HasIndex("PacienteId");
+
+                    b.ToTable("RegistrosRefeicao");
+                });
+
+            modelBuilder.Entity("DiabetesBot.Entities.RegistroRefeicao", b =>
+                {
+                    b.HasOne("DiabetesBot.Entities.Paciente", "Paciente")
+                        .WithMany()
+                        .HasForeignKey("PacienteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Paciente");
                 });
 #pragma warning restore 612, 618
         }
