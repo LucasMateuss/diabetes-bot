@@ -1,25 +1,38 @@
 using DiabetesBot.Data;
-using DotNetEnv; 
+using DiabetesBot.Data.Seeds;
+using DiabetesBot.Extensions;
+using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
-using DiabetesBot.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
 Env.TraversePath().Load();
 
-var dbUser = Environment.GetEnvironmentVariable("DB_USER");
-var dbPass = Environment.GetEnvironmentVariable("DB_PASSWORD");
-var dbName = Environment.GetEnvironmentVariable("DB_NAME");
-
-var connectionString = $"Host=localhost;Port=5432;Database={dbName};Username={dbUser};Password={dbPass}";
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
-
-builder.Services.AddOpenApi();
-
+builder.Services
+    .AddDatabase()
+    .AddExternalIntegrations()
+    .AddApplicationServices()
+    .AddOpenApi()
+    .AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.SuppressModelStateInvalidFilter = true;
+    });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    if (app.Environment.IsDevelopment())
+    {
+        await dbContext.Database.MigrateAsync();
+    }
+
+    await TacoSeeder.SeedAsync(dbContext, logger);
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -27,7 +40,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.MapWhatsappEndpoints();
+app.MapControllers();
 
 app.Run();
